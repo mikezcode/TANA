@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="13.0.1" class="java.beans.XMLDecoder">
+ <object class="java.util.ArrayList">
+  <void method="add">
+   <string>10.150.33.214</string>
+  </void>
+  <void method="add">
+   <string>10.150.33.215</string>
+  </void>
+  <void method="add">
+   <string>10.151.195.138</string>
+  </void>
+  <void method="add">
+   <string>10.151.195.146</string>
+  </void>
+  <void method="add">
+   <string>ip-host</string>
+  </void>
+  <void method="add">
+   <string>ip-host 10.130</string>
+  </void>
+  <void method="add">
+   <string>10.130.48</string>
+  </void>
+  <void method="add">
+   <string>10.150.101.</string>
+  </void>
+  <void method="add">
+   <string>external-vlan-range 2605</string>
+  </void>
+  <void method="add">
+   <string>vlan-range 2605</string>
+  </void>
+  <void method="add">
+   <string>-YK-PE-</string>
+  </void>
+  <void method="add">
+   <string>external-vlanid 2453</string>
+  </void>
+  <void method="add">
+   <string>10.150.80</string>
+  </void>
+  <void method="add">
+   <string>moved from microwave Brass</string>
+  </void>
+  <void method="add">
+   <string>SIRRA FA moved from microwave Brass</string>
+  </void>
+  <void method="add">
+   <string>197.156..94.1</string>
+  </void>
+  <void method="add">
+   <string>10.130.94.1</string>
+  </void>
+  <void method="add">
+   <string>interface smartgroup4.24991004</string>
+  </void>
+  <void method="add">
+   <string>10.150.63.250</string>
+  </void>
+  <void method="add">
+   <string>10.150.63.243</string>
+  </void>
+  <void method="add">
+   <string>10.150.63.214</string>
+  </void>
+  <void method="add">
+   <string>196.188.192.232</string>
+  </void>
+  <void method="add">
+   <string>10.150.192.230</string>
+  </void>
+  <void method="add">
+   <string>interface smartgroup1.44</string>
+  </void>
+  <void method="add">
+   <string>10.130.80</string>
+  </void>
+ </object>
+</java>

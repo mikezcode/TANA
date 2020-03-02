@@ -1,0 +1,371 @@
+%
+password=tame@123   //reset password for report
+%
+==> ############################ OLT & MDU  ##########################
+           
+* to Creat DBA-Profile in OLT		   
+(config)# dba-profile add profile-id (INDEX) type1 fix SPEED	              // INDEF=0,1,2..etc   SPEED=512,1024... for 512k,1M  respectivly
+	   
+* to Creat trafic table in OLT AND MDU		   
+(config)# traffic table ip index (INDEX) cir SPEED  pir SPEED priority 0 priority-policy local-Setting
+%
+==> ########################### ZTE GPON Config  #####################
+
+Bole-GPON# show vlan 1220
+vlanid          :1220
+name            :VLAN1220
+description     :N/A
+multicast-packet:flood-unknown
+tpid:0x8100
+port(untagged):
+port(tagged):
+  gei_0/1/1  
+  gpon-onu_0/3/1:8-9:1  
+show gpon onu detail-info gpon-onu_0/3/1:9  
+  
+ONU interface:         gpon-onu_0/3/1:9
+  Name:                ONU-1:9
+  Type:                MA5616
+  State:               ready
+  Admin state:         enable
+  Phase state:         LOS
+  SN Bind:             sn
+  Serial number:       enable with SN check
+  Password mode:       HWTCC2A4A16C
+  Password:            
+  Device ID:           
+  Description:         ICT-200M
+  Vport mode:          gemport
+  DBA Mode:            Hybrid
+  ONU Status:          enable
+  OMCI BW Profile:     enable
+  Line Profile:        N/A
+  Service Profile:     N/A             
+  Alarm Profile:       N/A
+  Performance Profile: N/A
+  ONU Distance:        2653m
+  Online Duration:     3h 12m 12s
+  FEC:                 none
+  
+ Bole-GPON#show running-config int gpon-olt_0/3/1
+
+$$$$$$$$$$$    TO GET TYPE OF gpon mode,  $$$$$$$$$$$$$$$$$$
+
+Bole-GPON#show onu-type gpon
+
+Onu type name :         MA5616     // &&&&&&&&&&&&$$$$$$$$$$$$$$$$$$$$$$   for  AR12000 HUAWEI 
+Pon type :              gpon
+Description :           test-sep-08
+Max tcont :             255
+Max gemport :           255
+Max switch per slot :   255
+Max flow per switch :   255
+Max iphost :            2
+Service ability N:1 :   support
+Service ability 1:M :   support
+Service ability 1:P :   support
+WiFi mgmt via non OMCI :   disable
+Omci send mode :        async   
+
+Onu type name :         ZTE-F622  /// for zte Gpon modem
+Pon type :              gpon
+Description :           4ETH, 2POTS
+Max tcont :             8
+Max gemport :           32
+Max switch per slot :   8
+Max flow per switch :   8
+Max iphost :            2
+Service ability N:1 :   support
+Service ability 1:M :   support
+Service ability 1:P :   support
+WiFi mgmt via non OMCI :   disable
+Omci send mode :        async
+
+1  check free onu and tyepe of Gpon we configured // onu 10 , type  MA5616   // 
+ #show running-config int gpon-olt_0/3/1
+
+interface gpon-olt_0/3/1
+  onu 1 type MA5616 sn HWTCA036183B
+  onu 2 type ZTE-F622 sn CIGG08312302
+  onu 3 type ZTE-F622 sn CIGG08312212
+  onu 4 type ZTE-F622 sn CIGG08312522
+  onu 5 type ZTE-F622 sn CIGG07520444
+  onu 6 type ZTE-F622 sn CIGG07381199
+  onu 7 type ZTE-F622 sn CIGG07520440
+  onu 8 type ZTE-F622 sn CIGG08312475
+  onu 9 type MA5616 sn HWTCC2A4A16C
+!
+end
+
+2 . add SN  manualy or use this one show gpon onu uncfg //gpon-olt_0/3/1
+
+   (config )# interface gpon-olt_0/3/1   
+   (config-gpon-olt_0/3/1)#  onu 10 type MA5616 sn HWTCC2A4A16C            //FOR HUAWEI MODEM USE TYPE MA5616
+   (config-gpon-olt_0/3/1)#  onu 10 type ZTE-F622 sn CIGG08312476           // FOR ZTE MODEM USE TYPE ZTE-F622
+3  check status of modem we added the sn
+  Bole-GPON#show gpon onu state gpon-olt_0/3/1  
+OnuIndex               Admin State  OMCC State   O7 State     Phase State
+----------------------------------------------------------------------------
+gpon-onu_0/3/1:1       enable       disable      unknown      OffLine      
+gpon-onu_0/3/1:2       enable       enable       operation    working      
+gpon-onu_0/3/1:3       enable       enable       operation    working      
+gpon-onu_0/3/1:4       enable       enable       operation    working      
+gpon-onu_0/3/1:5       enable       enable       operation    working      
+gpon-onu_0/3/1:6       enable       enable       operation    working      
+gpon-onu_0/3/1:7       enable       enable       operation    working      
+gpon-onu_0/3/1:8       enable       disable      unknown      DyingGasp    
+gpon-onu_0/3/1:9       enable       disable      unknown      LOS  
+
+!
+  
+5- creating  TCONT  and traffic with specisifed speed  if that SPEED is not available
+#show gpon profile tcont    // to see the existed TCONT
+#show gpon profile traffic  // to see the existed Traffic
+
+$$$$$$$$$$$  CREATING TCONT AND TRAFFIC IF NOT EXIST $$$$$$$$$$$$$$$$$$$
+
+(config) # gpon
+              
+               profile tcont T1-50M type 1 fixed 51200   //for 50M
+			   profile tcont T1-35M type 1 fixed 35840
+               profile tcont T-100M type 1 fixed 100000
+               profile tcont T-200M type 1 fixed 200000
+               profile tcont T-300M type 1 fixed 307200  // for 300M
+			   			    
+               profile traffic G1-50M sir 40000 pir 60000
+			    profile traffic G1-35M sir 35840 pir 35840
+			   profile traffic G-100M sir 80000 pir 120000
+               profile traffic G-200M sir 160000 pir 240000
+               profile traffic G-300M sir 307200 pir 307200
+			   
+			   
+ 4...creating sub interface for the coresponding ONU
+
+(config) # interface gpon-onu_0/3/1:10
+
+  description ICT-200M
+  sn-bind enable sn
+  tcont 1 name T1 profile T-300M
+  gemport 1 unicast tcont 1 dir both
+  gemport 1 traffic-limit downstream G-300M 
+  switchport mode hybrid vport 1
+  switchport vlan 1221  tag vport 1
+!
+   
+ 5- adding VLAN  and enable ports 
+  
+ 5.1  FOR ZTE GPON MODEM
+ 
+(config) # pon-onu-mng gpon-onu_0/3/1:10
+
+  flow mode 1 tag-filter vid-filter untag-filter transparent  
+  flow 1 priority 0 vid 1221                                  
+  gemport 1 flow 1  
+  
+  vlan-filter-mode ethuni eth_0/1 tag-filter vid-filter untag-filter transparent
+  vlan-filter-mode ethuni eth_0/2 tag-filter vid-filter untag-filter transparent
+  vlan-filter-mode ethuni eth_0/3 tag-filter vid-filter untag-filter transparent
+  vlan-filter-mode ethuni eth_0/4 tag-filter vid-filter untag-filter transparent
+  
+  vlan-filter ethuni eth_0/1 priority 0 vid 1221
+  vlan-filter ethuni eth_0/2 priority 0 vid 1221
+  vlan-filter ethuni eth_0/3 priority 0 vid 1221
+  vlan-filter ethuni eth_0/4 priority 0 vid 1221
+  
+  onu-vlan ethuni eth_0/1 up-mode add up-prio 0 up-vid 1220 down-mode untag
+  onu-vlan ethuni eth_0/2 up-mode add up-prio 0 up-vid 1220 down-mode untag
+  onu-vlan ethuni eth_0/3 up-mode add up-prio 0 up-vid 1220 down-mode untag
+  onu-vlan ethuni eth_0/4 up-mode add up-prio 0 up-vid 1220 down-mode untag
+!
+5.2 FOR GPON HUAWEI  // 
+
+(config) # pon-onu-mng gpon-onu_0/3/1:10
+
+  flow mode 1 tag-filter vid-filter untag-filter transparent
+  flow 1 priority 0 vid 1221
+  gemport 1 flow 1 
+  
+6. vlan tag to up link
+
+(config)# interface gei_0/1/1  
+(config-gei_0/1/1) #switchport vlan 1221 tag
+%
+==> ##########################    AR12000 configuration  ################################
+
+A : Enablin9 telnet server
+Run:
+   system-view
+ Run:
+telnet server enable 
+Run :
+telnet server port  23  //   <23,1025-55535>
+
+
+
+B:  configuring    PASSWORD
+Run:
+aaa 
+Run:                     
+ local-user admin password cipher [pasword]
+ local-user admin privilege level 15      
+ local-user admin service-type telnet 
+#
+Run:
+user-interface vty 0 4
+Run:
+user privilege level  15
+Run:
+authentication-mode password
+Run:
+set authentication password cipher 
+Enter Password(<8-128>):[password]
+Confirm password:[password]
+
+
+C: Configuring ACL Rules    
+    Run:
+    acl   number   2000
+    Run:
+    rule 5 permit source any
+
+ENABLING dhcp
+Run:
+dhcp enable
+
+
+ D:   creating IP POOL
+Run:
+ip pool TEST
+ Run: gateway-list 172.16.13.49 
+        network 172.16.13.48 mask 255.255.255.248 
+        lease unlimited
+        dns-list 8.8.8.8 8.8.4.4 
+#
+////////////////////////////////////////////////
+
+E: Configuring VLANIF (LAN SIDE)
+Run:
+interface Vlanif1  (all ethernet interface)
+ Run :ip address 172.16.13.49 255.255.255.248
+        dhcp select global     
+#
+
+Run 
+interface GigabitEthernet0/0/0
+Run :ip address 172.16.13.49 255.255.255.248
+        dhcp select global                             // dynamic   
+		
+Run
+#
+interface Vlanif10                                    // configure single ethernet interface 
+ description Ethernet0/0/3
+ ip address 192.168.19.254 255.255.0.0
+#
+interface Ethernet0/0/0
+ description VLAN-10
+ port link-type access
+ port default vlan 10
+ 
+///////////////////////////////////////////////////////////
+
+F: Creating NAT Address GRoup
+Run :
+  nat address-group 1 196.188.28.165 196.188.28.166 
+
+
+G: Configuring WAN Iinterface
+$$$$$$$$$$$$$$$$ single service on single port $$$$$$$$$$$$$$$
+
+Run:
+interface GigabitEthernet0/0/0     
+	 ip address 10.130.81.154 255.255.255.252
+     nat outbound 2000 address-group 1  no-pat  //one to one assignment
+#
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+@@@@@@@@@@ multi service @@@@@@@@@@@@@@@@@@@@
+Run:
+interface GigabitEthernet0/0/0
+     ip address dhcp-alloc //  when  multiservice is used inn single port with different vlan	
+#
+Run:
+interface GigabitEthernet0/0/0.1446   //wn multiservice is used  in single port with different vlan
+   dot1q termination vid 1446
+   ip address 10.130.81.154 255.255.255.252
+   nat outbound 2000 address-group 1  no-pat  //one to one assignment
+            
+#
+interface GigabitEthernet0/0/0.1447    // wn multi service is supported --same port but different vlan
+     dot1q termination vid 1447
+      ip address 10.130.234.212 255.255.255.248
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+	  
+H: Rounting to Default  gatway
+Run:
+ip route-static 0.0.0.0 0.0.0.0 10.130.81.153
+
+// to rest card on AR1200 reset slot 2   // if  slot 2 holds gpon card
+
+%
+==> ########################    SWITCH CONFIGURATION  ##############################
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@     bras configuration      @#@@@@@@@@@@@@@@@@@@@@@@@@@@@
+interface gei_1/7.3818
+  encapsulation dot1Q 3818
+  ip address 10.130.65.41 255.255.255.252
+  out_index 4543
+  description DB-Univ12/2/10-up-4-100-13/5/11-990002304
+  rate-limit input localport cir 204800 cbs 24576000 pir 204800 pbs 24576000 con
+form-action transmit exceed-action drop violate-action drop
+  rate-limit output localport cir 204800 cbs 24576000 pir 204800 pbs 24576000 co
+nform-action transmit exceed-action drop violate-action drop
+
+end
+///////////////////////////    ER CONFIGURATION   ////////////////////////
+
+interface gei-0/2/0/1.3818
+  description DB-Univ12/2/10-up-4-100-13/5/11-990002304
+  ip vrf forwarding DATA
+  ip address 10.130.65.41  255.255.255.252
+
+!</if-intf>
+!<vlan>
+vlan-configuration
+ interface gei-0/2/0/1.3818
+    encapsulation-dot1q 3818
+
+!</vrrp>
+!<pbr>
+ip policy interface xgei-0/1/1/1.3814 route-map Toger
+!</pbr>
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@     sw  configuration  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+interface gei_1/11
+  description DEBREBIRHAN_UNIV ERSITY-990002304
+  negotiation auto
+  switchport access vlan 3818
+  switchport qinq normal
+  traffic-limit rate-limit 204800 bucket-size 4096 in
+  traffic-limit rate-limit 204800 bucket-size 4096 out
+!
+vlan 3818
+name DEBREBIRHAN_UNIVERSITY
+
+
+DB-T64G-1#show vlan id 3818
+
+VLAN Name     Status  Said   MTU  IfIndex  PvidPorts   UntagPorts  TagPorts    
+--------------------------------------------------------------------------------
+3818 DEBREBIR active  103818 1500 0        gei_1/11                gei_1/1-2,ge
+     HAN_UNIV                                                      i_1/5-7,sg1
+     ERSITY  
+	 
+%

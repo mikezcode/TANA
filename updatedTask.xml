@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="13.0.1" class="java.beans.XMLDecoder">
+ <object class="java.util.ArrayList">
+  <void method="add">
+   <string>  ip-host description 83100270763_RUTH_MELAK08DEC1902Mar20 10.150.33.214 smartgroup1.1007 vlan 2545 sec-vlan 1574  author-temp-name YK-1M </string>
+  </void>
+ </object>
+</java>
