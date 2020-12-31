@@ -144,7 +144,7 @@ public class searchJFrame extends javax.swing.JFrame{
         xmlListWrite(updateData,"updatedTask");     
         for(String mike:xmlListRead("updatedTask"))iphostDataA.add(mike);
          for(String mike:xmlListRead("updatedTask"))updatedData.add(mike); 
-         dataUpdater(updateData);
+         
     }
     
     //@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -156,10 +156,11 @@ public class searchJFrame extends javax.swing.JFrame{
         ArrayList<String> updateData=xmlListRead("updatedTask");       
         String[] A=ss.split("\n");
         for(String a:A) updateData.add("  "+a);       
-        xmlListWrite(updateData,"updatedTask");     
+        xmlListWrite(updateData,"updatedTask");   
+        
         for(String mike:xmlListRead("updatedTask"))iphostDataA.add(mike); 
          for(String mike:xmlListRead("updatedTask"))updatedData.add(mike); 
-        dataUpdater(updateData);
+       // dataUpdater(updateData);
     }
     
        //@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -1455,14 +1456,11 @@ ArrayList<ArrayList<String>> DATA=xmlArrayRead(Name);
     }
      //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
           //@@@@@@@@@@@@@@@@@@@@@@@@
-     public String[] getIpRange(String wan){      
+     public int[] getIpRangeIndex(String wan){      
         String range="",sIP,eIP;
-        String[] result=new String[2];
-        int rIndex=-1,X=0,Z=0,Y=0,noHost,sub;       
-//        int ipRangeIndex=findIndex(dataColls(IPrange,0),A[searchIndex][17]); 
-     
-  for (int j = 1; j < IPrange.length; j++) {
-            
+        int[] result=new int[2];
+        int rIndex=-1,noHost,sub;       
+     for (int j = 1; j < IPrange.length; j++) {
      for (int i = 1; i < IPrange[0].length-1; i++) {       
          
           range=IPrange[j][i];
@@ -1472,9 +1470,8 @@ ArrayList<ArrayList<String>> DATA=xmlArrayRead(Name);
           noHost=(subIp(eIP,1)-subIp(sIP,1)+1)*(subIp(eIP,2)-subIp(sIP,2)+1)*(subIp(eIP,3)-subIp(sIP,3)+1)*(subIp(eIP,4)-subIp(sIP,4)+3);
           sub=1+(Integer.numberOfLeadingZeros(noHost));
           if(networkIp(sIP,sub).compareTo(networkIp(wan,sub))==0){ 
-            Z=i;
-            result=IPrange[0][Z].trim().split("\\s+");
-            if(result[1].contains("broadband")) result[0]="interface "+result[0];
+            result[0]=j;
+            result[1]=i;
           }
          }
         }
@@ -1768,6 +1765,7 @@ return qinqInter;
          outputtext.append("\n         qinq range internal-vlan-range "+Vlan.trim()+" external-vlan-range "+A[searchIndex][2]);
          outputtext.append("\n\n");
          updateTask(config);
+         dataUpdater(WanIp.trim(), getIpRangeIndex(WanIp)[0], getIpRangeIndex(WanIp)[1]);
          //dataUpdater
         
      }
@@ -1861,6 +1859,7 @@ return qinqInter;
          outputtext.append("\n         qinq "+A[searchIndex][2]+" second-dot1q "+Vlan.trim());
          outputtext.append("\n\n");
          updateTask(config);  
+         dataUpdater(WanIp.trim(), getIpRangeIndex(WanIp)[0], getIpRangeIndex(WanIp)[1]);
      }
     }
     //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -3649,7 +3648,7 @@ return allData;
         return tData;
       }
        
-       public ArrayList <String> changeVlan(String SS,String sVlan){
+public ArrayList <String> changeVlan(String SS,String sVlan){
             ArrayList<String> data=bbParamFind(SS);
             ArrayList<String> finalVlan = new ArrayList<>(); 
             String wanIp=data.get(0);
@@ -4007,7 +4006,7 @@ else
      
 if(((ipNum(str,3).compareTo(ipNum(sIp,3)))>=0) && ((ipNum(eIp,3).compareTo(ipNum(str,3)))>=0)){
         X.add(str); 
-   
+    
         } 
 // }
 }
@@ -4096,51 +4095,50 @@ public ArrayList freeIpFinder(int row,int col){
 }
   
 //@@@@@@@@@@@@@@@@@@
-public void dataUpdater(ArrayList<String> updatedData1){
-     
-      ArrayList<String>[][] temp= new ArrayList[IPrange.length][IPrange[0].length];
-//      ArrayList<String>[] temp2= new ArrayList[dataColls(A,0).length];
-//      ArrayList<String>[] temp3= new ArrayList[dataColls(A,0).length];
-      
-       for (int i = 0; i < IPrange.length; i++) {
-         for (int j = 0; j <IPrange[i].length-1 ; j++) {
-            temp[i][j]=new ArrayList<>();
-          
-         }
-         
-     }
-//       for (int h = 0; h < temp2.length; h++) {
-//           temp2[h]= new ArrayList<>();
-//        
-//    }
-       
- //for(String mike:xmlListRead("updatedTask"))updatedData1.add(mike); 
-  // IP Updater    
-     for (int i = 1; i < IPrange.length; i++) {
-         for (int j = 1; j <IPrange[i].length-1 ; j++) {
-          temp[i][j]=takenIpFinder(updatedData1,IPrange[i][j]);
-           
-         }
-     }
+//public void dataUpdater(ArrayList<String> updatedData1){
+public void dataUpdater(String wanIp,int i,int j){
+  takenIpData[i][j].add( wanIp );
+  freeIpData[i][j] =XOR(freeIpData[i][j],takenIpData[i][j]);
     
-     for (int ii = 1; ii < IPrange.length; ii++) {
-         for (int jj = 1; jj <IPrange[ii].length-1 ; jj++) {
-          
-             
-             for (int k = 0; k < temp[ii][jj].size(); k++) {
-                     takenIpData[ii][jj].add( temp[ii][jj].get(k) );
-                 }
-             
-          }
-     }
-     
-        for (int n = 1; n < IPrange.length; n++) {
-         for (int p = 1; p <IPrange[n].length-1 ; p++) {
-            freeIpData[n][p] =XOR ( freeIpData[n][p],takenIpData[n][p]); 
-      
-         }
-         
-     }
+//     
+//      ArrayList<String>[][] temp= new ArrayList[IPrange.length][IPrange[0].length];
+//   for (int i = 0; i < IPrange.length; i++) {
+//         for (int j = 0; j <IPrange[i].length-1 ; j++) {
+//            temp[i][j]=new ArrayList<>();
+//          
+//         }
+//         
+//     }
+
+  // IP Updater 
+  
+
+  
+//     for (int i = 1; i < IPrange.length; i++) {
+//         for (int j = 1; j <IPrange[i].length-1 ; j++) {
+//          temp[i][j]=takenIpFinder(updatedData1,IPrange[i][j]);
+//           
+//         }
+//     }
+//    
+//     for (int ii = 1; ii < IPrange.length; ii++) {
+//         for (int jj = 1; jj <IPrange[ii].length-1 ; jj++) {
+//          
+//             
+//             for (int k = 0; k < temp[ii][jj].size(); k++) {
+//                     takenIpData[ii][jj].add( temp[ii][jj].get(k) );
+//                 }
+//             
+//          }
+//     }
+//     
+//        for (int n = 1; n < IPrange.length; n++) {
+//         for (int p = 1; p <IPrange[n].length-1 ; p++) {
+//            freeIpData[n][p] =XOR ( freeIpData[n][p],takenIpData[n][p]); 
+//      
+//         }
+//         
+//     }
         
         // VLAN UPDATER
 //        
@@ -6772,18 +6770,14 @@ ArrayList<ArrayList<String>> backup=xmlArrayRead("BackUp");
         else{
        if(A[searchIndex][6].contains("smartgroup")){
         String desc="";
-        String vlan;
+        String vlan,wanIp;
         if(vpnVlan.getText().equals("")) vlan="0000";else vlan=vpnVlan.getText();
         String dataInterface=(A[searchIndex][6]+"."+A[searchIndex][2]+vlan);
         if(!(vpnName.getText().equals(""))&& !(vpnAccess.getText().equals("")))
             desc=(vpnAccess.getText().trim()+"_"+vpnName.getText()).trim().toUpperCase()+"_"+today();
         else if(vpnAccess.getText().equals("")) desc=vpnName.getText().trim().toUpperCase()+"_"+today();//replaceAll("\\s++","_");
         else if(vpnName.getText().equals("")) desc=vpnAccess.getText().trim().toUpperCase()+"_"+today();//replaceAll("\\s++","_");
-//        if(searchIndex==-1)outputtext.setText(noMsag());
-//        else{
-            //String cName=vpnName.getText().trim().toUpperCase().replaceAll("\\s++","_");//  replaceAll("\\s++","_").....replace all white space with "_"
-//            outputtext.append(vpnConfig(desc,vpnSpeed.getText(),vpnVlan.getText(),vpnWanIp.getText(),vpnLanIp.getText(),vpnSubnet.getText(),vpnVrf.getText(),vpnVrrp.getText(),dataInterface));
-            
+        
           String finalConfig="",ipAlloc="",ipPolicy="",DATAINTERFACE="",exVlan="";
 //          DATAINTERFACE="smartgroup"+A[searchIndex][6]+"."+A[searchIndex][2]+vpnVlan.getText();
           if((vpnVrf.getText().trim().equals("DATA"))){
@@ -6798,6 +6792,8 @@ ArrayList<ArrayList<String>> backup=xmlArrayRead("BackUp");
           }
           else ipPolicy="";
           ipAlloc=getIpAlloc(vpnWanIp.getText());
+          wanIp=vpnWanIp.getText().trim();
+           System.out.println(wanIp);
           exVlan=A[searchIndex][2];
           ArrayList<String> outPutVc=vpnConfig(desc,vpnSpeed.getText().trim(),vpnVlan.getText().trim(),exVlan,
                   vpnWanIp.getText().trim(),vpnLanIp.getText().trim(),vpnSubnet.getText().trim(),
@@ -6808,6 +6804,9 @@ ArrayList<ArrayList<String>> backup=xmlArrayRead("BackUp");
            finalConfig= ("                  @T@A@M@I@R@U@       --   "+ipAlloc+" - ER          --               @M@$@L@L@A@  \n\n\n"+
                   "   config t\n"+ outPutVc.get(0)+ipPolicy+"\n\n\n\n" );
                   updateTask("!\n"+outPutVc.get(0)+ipPolicy+"\n!"); 
+                  System.out.println(getIpRangeIndex(wanIp)[1]+"--vpnWanIp="+wanIp);
+                  dataUpdater(wanIp, getIpRangeIndex(wanIp)[0], 
+                          getIpRangeIndex(wanIp)[1]);
            }  
     
        else if(!(vpnVrrp.getText().trim().equals(""))){
@@ -6816,6 +6815,9 @@ ArrayList<ArrayList<String>> backup=xmlArrayRead("BackUp");
                  "   config t\n"+outPutVc.get(0)+ipPolicy+
                   "\n                   @T@A@M@I@R@U@       --   "+ipAlloc+" - ER - B          --               @M@$@L@L@A@  \n\n\n\n"+"   config t\n"+outPutVc.get(1)+ipPolicy);
                 updateTask("!\n"+outPutVc.get(0)+"\n!\n"+outPutVc.get(1)+ipPolicy+"\n!"); 
+                
+                dataUpdater(wanIp, getIpRangeIndex(wanIp)[0], 
+                          getIpRangeIndex(wanIp)[1]);
           }
          
           
@@ -6856,6 +6858,8 @@ ArrayList<ArrayList<String>> backup=xmlArrayRead("BackUp");
            finalConfig= ("                  @T@A@M@I@R@U@       --   "+ipAlloc+" - ER          --               @M@$@L@L@A@  \n\n\n"+
                   "   config t\n"+ outPutVc.get(0)+ipPolicy+"\n\n\n\n" );
                   updateTask("!\n"+outPutVc.get(0)+ipPolicy+"\n!"); 
+                  dataUpdater(vpnWanIp.getText().trim(), getIpRangeIndex(vpnWanIp.getText().trim())[0], 
+                          getIpRangeIndex(vpnWanIp.getText().trim())[1]);
            }  
     
        else if(!(vpnVrrp.getText().trim().equals(""))){
@@ -6864,6 +6868,8 @@ ArrayList<ArrayList<String>> backup=xmlArrayRead("BackUp");
                  "   config t\n"+outPutVc.get(0)+ipPolicy+
                   "\n                   @T@A@M@I@R@U@       --   "+ipAlloc+" - ER - B          --               @M@$@L@L@A@  \n\n\n\n"+"   config t\n"+outPutVc.get(1)+ipPolicy);
                 updateTask("!\n"+outPutVc.get(0)+"\n!\n"+outPutVc.get(1)+ipPolicy+"\n!"); 
+                dataUpdater(vpnWanIp.getText().trim(), getIpRangeIndex(vpnWanIp.getText().trim())[0], 
+                          getIpRangeIndex(vpnWanIp.getText().trim())[1]);
           }
           outputtext.append(finalConfig) ; 
             
@@ -6977,6 +6983,8 @@ ArrayList<ArrayList<String>> backup=xmlArrayRead("BackUp");
 
             outputtext.append(finalOut);  
             updateTask("!\n"+pOut.get(0)+"\n!");
+            dataUpdater(pWanIp.getText().trim(), getIpRangeIndex(pWanIp.getText().trim())[0], 
+                         getIpRangeIndex(pWanIp.getText().trim())[1]);
             save.setEnabled(true);
             save.setBackground(Color.blue);
             save.setForeground(Color.white);
