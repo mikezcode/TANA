@@ -1455,9 +1455,9 @@ ArrayList<ArrayList<String>> DATA=xmlArrayRead(Name);
     }
      //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
           //@@@@@@@@@@@@@@@@@@@@@@@@
-     public String[] getIpRange(String wan){      
-        String range="",sIP,eIP;
-        String[] result=new String[2];
+     public String getVbui(String wan){      
+        String range="",sIP,eIP,ans="";
+        String[]result=new String[3];
         int rIndex=-1,X=0,Z=0,Y=0,noHost,sub;       
 //        int ipRangeIndex=findIndex(dataColls(IPrange,0),A[searchIndex][17]); 
      
@@ -1474,12 +1474,12 @@ ArrayList<ArrayList<String>> DATA=xmlArrayRead(Name);
           if(networkIp(sIP,sub).compareTo(networkIp(wan,sub))==0){ 
             Z=i;
             result=IPrange[0][Z].trim().split("\\s+");
-            if(result[1].contains("broadband")) result[0]="interface "+result[0];
+            if(result[1].contains("broadband")&&result[1].contains("vbui")) ans=result[0];
           }
          }
         }
          
-        return result;
+        return ans;
                 
     }
      //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -1663,77 +1663,29 @@ return qinqInter;
      public void bbConfig (String description,String SSpeed,String VlaN,String WanIP){
      if(A[searchIndex][6].contains("smartgroup")){
          
-      outputtext.setText("");
-      String smartG=""; String sg="";String vbui="";String qinq="";String WanIp="0.0.0.0";String Vlan="0000";String Speed="";
+       outputtext.setText("");
+       String smartG=""; int sgIndex,vbuiIndex;String vbui="";String qinq="";String WanIp="0.0.0.0";String Vlan="0000";String Speed="";
        String ipGrp=A[searchIndex][17];int index=findIndex(dataColls(IPrange,0),ipGrp); String ipStart=IPrange[index][1].substring(0,7)+"0.1";    
        if(WanIP.equals(""))WanIp=ipStart;else WanIp=WanIP;
-//       if(!WanIP.equals("")) WanIp=WanIP;
        if(!VlaN.equals(""))Vlan=VlaN;
         String sp=A[searchIndex][4];int iOf=sp.indexOf("/");
-          int temp=subIp(WanIp,3);
-          int temp2=subIp(WanIp,2);
+        
        if(A[searchIndex][4].contains("/")){
             smartG=("slot "+sp.substring(0,iOf)+" port "+sp.substring(iOf+1,sp.length()));
+            vbui=getVbui(WanIp);
+            qinq=qinq(searchIndex,vbui);
+            ipRangeIndexer=findIndex(IPrange[0],((vbui.trim())+" broadband")); 
           
-        if(temp>=0&&temp<=63&&temp2!=85&&temp2!=151){
-             vbui="interface vbui100";
-             qinq=qinqvbui100(searchIndex);
-             ipRangeIndexer=findIndex(IPrange[0],"vbui100 broadband");
-        }
-         if(temp>=128&&temp<=255&&temp2==85){
-             vbui="interface vbui101";
-             qinq=qinqvbui101(searchIndex);
-             ipRangeIndexer=findIndex(IPrange[0],"vbui101 broadband");
-        }
-        
-         if(temp>=96&&temp<=111&&temp2!=85&&temp2!=151){
-             vbui="interface vbui200";
-             qinq=qinqvbui200(searchIndex);
-             ipRangeIndexer=findIndex(IPrange[0],"vbui200 broadband");
-        }
-        if(temp>=96&&temp<=127&&temp2==151){
-             vbui="interface vbui300";
-             qinq=qinqvbui300(searchIndex);
-             ipRangeIndexer=findIndex(IPrange[0],"vbui300 broadband");
-        }
-        if((WanIp.trim().substring(0,3).equals("196"))){
-            vbui="interface vbui1700";
-            qinq=qinqvbui1700(searchIndex);
-            ipRangeIndexer=findIndex(IPrange[0],"vbui1700 broadband");
-        }
-       }else{
-         if(temp>=0&&temp<=63&&temp2!=85){
-            smartG=("smartgroup"+A[searchIndex][4]+"."+A[searchIndex][5]);
-            vbui="interface vbui100";
-            qinq=qinqvbui100(searchIndex);
-            Speed=speedN(SSpeed,WanIp);
-        }
-          if(temp>=128&&temp<=255&&temp2==85){
-            smartG=("smartgroup"+A[searchIndex][4]+"."+A[searchIndex][21]);
-            vbui="interface vbui101";
-            qinq=qinqvbui101(searchIndex);
-            Speed=speedN(SSpeed,WanIp);
-        }
-         if(temp>=96&&temp<=111&&temp2!=85&&temp2!=151){
-            smartG=("smartgroup"+A[searchIndex][4]+"."+A[searchIndex][16]);
-            vbui="interface vbui200";
-            qinq=qinqvbui200(searchIndex);
-            Speed=speedN(SSpeed,WanIp);
-        } 
-          if(temp>=96&&temp<=127&&temp2==151){
-            smartG=("smartgroup"+A[searchIndex][4]+"."+A[searchIndex][22]);
-            vbui="interface vbui300";
-            qinq=qinqvbui300(searchIndex);
-            Speed=speedN(SSpeed,WanIp);
-        }
+       }
+       else{
          
-        if((WanIp.trim().substring(0,3).equals("196"))){
-            smartG=("smartgroup"+A[searchIndex][4]+"."+A[searchIndex][9]);
-            vbui="interface vbui1700";
-            qinq=qinqvbui1700(searchIndex);
+            sgIndex=searchIndex(A[0], "smartgroup").get(0);
+            vbuiIndex=searchIndex(A[0], getVbui(WanIp)).get(0);
+            smartG=("smartgroup"+A[searchIndex][sgIndex]+"."+A[searchIndex][vbuiIndex]);
+            vbui="interface "+getVbui(WanIp);
+            qinq=qinq(searchIndex,getVbui(WanIp));
             Speed=speedN(SSpeed,WanIp);
-            
-        }
+        
         }
        
 
@@ -1772,8 +1724,8 @@ return qinqInter;
         
      }
      if(!A[searchIndex][6].contains("smartgroup")){
-                  outputtext.setText("");
-      String smartG=""; String sg="";String vbui="";String qinq="";String WanIp="0.0.0.0";String Vlan="0000";
+      outputtext.setText("");
+      String smartG=""; int sgIndex,vbuiIndex;String vbui="";String qinq="";String WanIp="0.0.0.0";String Vlan="0000";
        String ipGrp=A[searchIndex][17];int index=findIndex(dataColls(IPrange,0),ipGrp); String ipStart=IPrange[index][1].substring(0,7)+"0.1";    
        if(WanIP.equals(""))WanIp=ipStart;else WanIp=WanIP;
 //       if(!WanIP.equals("")) WanIp=WanIP;
@@ -1783,56 +1735,18 @@ return qinqInter;
           int temp2=subIp(WanIp,2);
        if(A[searchIndex][4].contains("/")){
             smartG=("slot "+sp.substring(0,iOf)+" port "+sp.substring(iOf+1,sp.length()));
-          
-        if(temp>=0&&temp<=63&&temp2!=85){
-             vbui="interface vbui100";
-             qinq=qinqvbui100(searchIndex);
-        }
-         if(temp>=128&&temp<=255&&temp2==85){
-             vbui="interface vbui101";
-             qinq=qinqvbui101(searchIndex);
-        }
-         if(temp>=96&&temp<=111&&temp2!=151&&temp2!=85){
-             vbui="interface vbui200";
-             qinq=qinqvbui200(searchIndex);
-        }
-          if(temp>=96&&temp<=127&&temp2==151){
-             vbui="interface vbui300";
-             qinq=qinqvbui300(searchIndex);
-        }
-        if((WanIp.trim().substring(0,3).equals("196"))){
-            vbui="interface vbui1700";
-            qinq=qinqvbui1700(searchIndex);
-            
-        }
-       }else{
-         if(temp>=0&&temp<=63&&temp2!=85){
-            smartG=("smartgroup"+A[searchIndex][4]+"."+A[searchIndex][5]);
-            vbui="interface vbui100";
-            qinq=qinqvbui100(searchIndex);
-        }
-          if(temp>=0&&temp<=63&&temp2!=85){
-            smartG=("smartgroup"+A[searchIndex][4]+"."+A[searchIndex][21]);
-            vbui="interface vbui101";
-            qinq=qinqvbui101(searchIndex);
-        }
-         if(temp>=96&&temp<=111&&temp2!=85&&temp2!=151){
-            smartG=("smartgroup"+A[searchIndex][4]+"."+A[searchIndex][16]);
-            vbui="interface vbui200";
-            qinq=qinqvbui200(searchIndex);
-        } 
-           if(temp>=96&&temp<=127&&temp2==151){
-            smartG=("smartgroup"+A[searchIndex][4]+"."+A[searchIndex][22]);
-            vbui="interface vbui300";
-            qinq=qinqvbui300(searchIndex);
-        } 
-         
-        if((WanIp.trim().substring(0,3).equals("196"))){
-            smartG=("smartgroup"+A[searchIndex][4]+"."+A[searchIndex][9]);
-            vbui="interface vbui1700";
-            qinq=qinqvbui1700(searchIndex);
-            
-        }
+            vbui = "interface "+getVbui(WanIp);
+            qinq = qinq(searchIndex,getVbui(WanIp));
+      
+       }
+       else
+       {
+           sgIndex=searchIndex(A[0],"smartgroup").get(0);
+           vbuiIndex=searchIndex(A[0],"smartgroup").get(0);
+           smartG=("smartgroup"+A[searchIndex][sgIndex]+"."+A[searchIndex][vbuiIndex]);
+           vbui="interface "+getVbui(WanIp);
+           qinq=qinq(searchIndex,getVbui(WanIp));
+           
         }
        String Speed=Integer.toString(speed(SSpeed));
 
@@ -2648,11 +2562,13 @@ return subnetIn;
     //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     
     //@@@@@@@@@@@@@@@@@@
+    
     public String smartgroup(int x){
-          String S=(qinqvbui100(x).split("\\s+"))[1];
+          String S=(qinq(x,"vbui100").split("\\s+"))[1];
         int ind=S.indexOf(".");
         String SMARTG=S.substring(0, ind+1);
         return SMARTG; 
+        
     }
     //@@@@@@@@@@@@@@@@@@@@@@@@@
     
@@ -2725,151 +2641,39 @@ return subnetIn;
     
     //@@@@@@@@@@@@@@@@@@@@@@@@@@
     
-    public String qinqvbui100(int xx){
-       String result="";
-        if(A[xx][6].contains("smartgroup")){
-        int index=xx;
-        String tem =String.valueOf(A[index][4]).toLowerCase();
-         String tem2="/";
-         
-     if (tem.contains(tem2)) {
-              result=("interface gei_"+String.valueOf(A[index][4])+"."+String.valueOf(A[index][5]));
-     }  else{      
-              result=("interface smartgroup"+String.valueOf(A[index][4])+"."+String.valueOf(A[index][5]));
-     } 
-       }
-      if(!A[xx][6].contains("smartgroup")) {
-              int index=xx;
-        String tem =String.valueOf(A[index][4]).toLowerCase();
-         String tem2="/";
-         
-     if (tem.contains(tem2)) {
-              result=("interface gei_"+String.valueOf(A[index][4])+"."+String.valueOf(A[index][5])+" bras");
-     }  else{      
-              result=("interface smartgroup"+String.valueOf(A[index][4])+"."+String.valueOf(A[index][5])+" bras");
-     } 
-      }
-     return result;   
-     
-    }
-     //@@@@@@@@@@@@@@@@@@@@@@@@
-    
-       public String qinqvbui101(int y){
-     String qinq="";
-     int index=y;
-           if(A[y][6].contains("smartgroup")){ 
-           
-          
-        String tem =String.valueOf(A[index][4]).toLowerCase();
-         String tem2="/";
-         
-     if (tem.contains(tem2)) {
-             qinq=("interface gei_"+String.valueOf(A[index][4])+"."+String.valueOf(A[index][21])); 
-     }  else{ 
-             qinq=("interface smartgroup"+String.valueOf(A[index][4])+"."+String.valueOf(A[index][21]));
-     }  
-      }
-     if(!A[y][6].contains("smartgroup")) {
-            String tem =String.valueOf(A[index][4]).toLowerCase();
-         String tem2="/";
-         
-     if (tem.contains(tem2)) {
-             qinq=("interface gei_"+String.valueOf(A[index][4])+"."+String.valueOf(A[index][21])+" bras"); 
-     }  else{ 
-             qinq=("interface smartgroup"+String.valueOf(A[index][4])+"."+String.valueOf(A[index][21])+" bras");
-     } 
-     }
-        return qinq;   
-    }
-    //@@@@@@@@@@@@@@@@@@@@@@@@
-    //@@@@@@@@@@@@@@@@@@@@@@@@
-    
-       public String qinqvbui200(int y){
-     String qinq="";
-     int index=y;
-           if(A[y][6].contains("smartgroup")){ 
-           
-          
-        String tem =String.valueOf(A[index][4]).toLowerCase();
-         String tem2="/";
-         
-     if (tem.contains(tem2)) {
-             qinq=("interface gei_"+String.valueOf(A[index][4])+"."+String.valueOf(A[index][16])); 
-     }  else{ 
-             qinq=("interface smartgroup"+String.valueOf(A[index][4])+"."+String.valueOf(A[index][16]));
-     }  
-      }
-     if(!A[y][6].contains("smartgroup")) {
-            String tem =String.valueOf(A[index][4]).toLowerCase();
-         String tem2="/";
-         
-     if (tem.contains(tem2)) {
-             qinq=("interface gei_"+String.valueOf(A[index][4])+"."+String.valueOf(A[index][16])+" bras"); 
-     }  else{ 
-             qinq=("interface smartgroup"+String.valueOf(A[index][4])+"."+String.valueOf(A[index][16])+" bras");
-     } 
-     }
-        return qinq;   
-    }
-      
-       //@@@@@@@@@@@@@@@@@@@@@@@@
-    
-       public String qinqvbui300(int y){
-     String qinq="";
-     int index=y;
-           if(A[y][6].contains("smartgroup")){ 
-           
-          
-        String tem =String.valueOf(A[index][4]).toLowerCase();
-         String tem2="/";
-         
-     if (tem.contains(tem2)) {
-             qinq=("interface gei_"+String.valueOf(A[index][4])+"."+String.valueOf(A[index][22])); 
-     }  else{ 
-             qinq=("interface smartgroup"+String.valueOf(A[index][4])+"."+String.valueOf(A[index][22]));
-     }  
-      }
-     if(!A[y][6].contains("smartgroup")) {
-            String tem =String.valueOf(A[index][4]).toLowerCase();
-         String tem2="/";
-         
-     if (tem.contains(tem2)) {
-             qinq=("interface gei_"+String.valueOf(A[index][4])+"."+String.valueOf(A[index][22])+" bras"); 
-     }  else{ 
-             qinq=("interface smartgroup"+String.valueOf(A[index][4])+"."+String.valueOf(A[index][22])+" bras");
-     } 
-     }
-        return qinq;   
-    }
-    //@@@@@@@@@@@@@@@@@@@@@@@@
-    //@@@@@@@@@@@@@@@@@@@@@@@@
-    
-       public String qinqvbui1700(int y){
-        int index=y;String qinq="";
-    
-    if(A[y][6].contains("smartgroup")){ 
-        String tem =String.valueOf(A[index][4]).toLowerCase();
-         String tem2="/";
-         
-     if (tem.contains(tem2)) {
-             qinq=("interface gei_"+String.valueOf(A[index][4])+"."+String.valueOf(A[index][9])); 
-     }  else{ 
-             qinq=("interface smartgroup"+String.valueOf(A[index][4])+"."+String.valueOf(A[index][9]));
-     }
-    }
-      if(!A[y][6].contains("smartgroup")) {
-          
-          String tem =String.valueOf(A[index][4]).toLowerCase();
-         String tem2="/";
-         
-     if (tem.contains(tem2)) {
-             qinq=("interface gei_"+String.valueOf(A[index][4])+"."+String.valueOf(A[index][9])+" bras"); 
-     }  else{ 
-             qinq=("interface smartgroup"+String.valueOf(A[index][4])+"."+String.valueOf(A[index][9])+" bras");
-     }   
-      }
-        return qinq;   
-    }
+public String qinq(int xx,String vbui){
+  String result = "";
+  
+  int vbuiIndex = searchIndex(A[0], vbui).get(0);
+  int sgIndex = searchIndex(A[0], "smartgroup").get(0);
+  int vpnIntIndex = searchIndex(A[0], "vpn interface").get(0);
+  
+  if (A[xx][vpnIntIndex].contains("smartgroup")) {
+   int index = xx;
+   String tem = String.valueOf(A[index][sgIndex]).toLowerCase();
+   String tem2 = "/";
+
+   if (tem.contains(tem2)) {
+    result = ("interface gei_" + String.valueOf(A[index][sgIndex]) + "." + String.valueOf(A[index][vbuiIndex]));
+   } else {
+    result = ("interface smartgroup" + String.valueOf(A[index][sgIndex]) + "." + String.valueOf(A[index][vbuiIndex]));
+   }
+  }
+  if (!A[xx][vpnIntIndex].contains("smartgroup")) {
+   int index = xx;
+   String tem = String.valueOf(A[index][sgIndex]).toLowerCase();
+   String tem2 = "/";
+
+   if (tem.contains(tem2)) {
+    result = ("interface gei_" + String.valueOf(A[index][sgIndex]) + "." + String.valueOf(A[index][vbuiIndex]) + " bras");
+   } else {
+    result = ("interface smartgroup" + String.valueOf(A[index][sgIndex]) + "." + String.valueOf(A[index][vbuiIndex]) + " bras");
+   }
+  }
+  return result;
+
+ }
+
        
      //@@@@@@@@@@@@@@@@@@@@@@@
        
@@ -3642,14 +3446,15 @@ return allData;
     if((SS.contains("ip vrf forwarding "))&&(SS.contains("shutdown")) ||
     ((SS.contains("internal-vlanid "))&&(SS.contains("external-vlanid "))&&(SS.contains("shutdown")))){
               
-          tData= new ArrayList<>(Arrays.asList(new String[]{"\n\n"+"   The current Customer is Blocked\n\n"}));
+      tData= new ArrayList<>(Arrays.asList(new String[]{"\n\n"+"   The current Customer is Blocked\n\n"}));
           }
         ///////////////////////////////////////////////////////////////////////////////////
           
         return tData;
       }
-       
-       public ArrayList <String> changeVlan(String SS,String sVlan){
+ 
+      
+public ArrayList <String> changeVlan(String SS,String sVlan){
             ArrayList<String> data=bbParamFind(SS);
             ArrayList<String> finalVlan = new ArrayList<>(); 
             String wanIp=data.get(0);
@@ -3660,22 +3465,12 @@ return allData;
                ArrayList vlanInd=new ArrayList <>();
                Interface=data.get(1);
                String m2=""; String cVlan=""; String m1="";
-               int temp=-1,temp2=-1;
+               String temp="";
        if(SS.contains("ip host")) {    
           if(SS.contains("slot")&&SS.contains("port"))
             {
-             temp=subIp(midString(SS,"ip host","slot"),3);
-            temp2=subIp(midString(SS,"ip host","slot"),2); 
-            if(SS.contains("ip host 196."))  m1="interface vbui1700" ;            
-//             if(temp>=0&&temp<=63) m1="interface vbui100" ;
-//             if(temp>=96&&temp<=111) m1="interface vbui200" ;
-                 
-        // update301220   
-           
-        if((temp>=0&&temp<=63)&&(temp2!=85)) m1="interface vbui100"; 
-        if((temp>=96&&temp<=111)&&(temp2!=85)&&(temp2!=151))m1="interface vbui200";
-        if((temp>=128&&temp<=254)&&(temp2==85))m1="interface vbui101";
-        if((temp>=96&&temp<=127)&&(temp2==151))m1="interface vbui300";
+             temp=midString(SS,"ip host","slot");
+             m1= "interface "+getVbui(temp);  
              descr=data.get(7);
                    int slotindex=-1; 
                    exVlan=data.get(4);
@@ -3688,31 +3483,16 @@ return allData;
               } 
              
              int slotPort=(int)vlanInd.get(slotindex); 
-             if (SS.contains("ip host 196.")) m2=qinqvbui1700(slotPort) ;
-//             if(temp>=0&&temp<=63)m2=qinqvbui100(slotPort);
-//             if(temp>=96&&temp<=111)m2=qinqvbui200(slotPort); 
+             m2=qinq(slotPort,temp);
              
-        if((temp>=0&&temp<=63)&&(temp2!=85)) m2=qinqvbui100(slotPort);
-        if((temp>=96&&temp<=111)&&(temp2!=85)&&(temp2!=151))m2=qinqvbui200(slotPort);
-        if((temp>=128&&temp<=254)&&(temp2==85))m2=qinqvbui101(slotPort);
-        if((temp>=96&&temp<=127)&&(temp2==151))m2=qinqvbui300(slotPort);
-              
-//             if (!(SS.contains("ip host 196."))) m2=qinqvbui100(slotPort);             
              }
             cVlan="ip host "+wanIp+" "+Interface+" vlan "+data.get(4)+" second-vlan "+sVlan+" up-rate "+data.get(6)+" down-rate "+data.get(6)+" description "+descr;
             }
           if(SS.contains("smartgroup")) {
-                temp=subIp(midString(SS,"ip host","smartgroup"),3);
-                temp2=subIp(midString(SS,"ip host","smartgroup"),2);
+                temp=midString(SS,"ip host","smartgroup");
                 descr=data.get(5);
                 m2=" interface "+data.get(1)+" bras";
-             if(SS.contains("ip host 196.")) m1="interface vbui1700" ;            
-//             if(temp>=0&&temp<=63) m1="interface vbui100" ;
-//             if(temp>=96&&temp<=111) m1="interface vbui200" ;
-        if((temp>=0&&temp<=63)&&(temp2!=85)) m1="interface vbui100"; 
-        if((temp>=96&&temp<=111)&&(temp2!=85)&&(temp2!=151))m1="interface vbui200";
-        if((temp>=128&&temp<=254)&&(temp2==85))m1="interface vbui101";
-        if((temp>=96&&temp<=127)&&(temp2==151))m1="interface vbui300";
+                m1="interface "+getVbui(temp);
                 exVlan=data.get(2);
                 cVlan="ip host "+wanIp+" "+Interface+" vlan "+data.get(2)+" second-vlan "+sVlan+" up-rate "+data.get(4)+" down-rate "+data.get(4)+" description "+descr;
             }
@@ -3749,19 +3529,10 @@ return allData;
         if(SS.contains("ip-host")) { 
           
           if(SS.contains("smartgroup")) {
-                temp=subIp(data.get(0),3);
-                temp2=subIp(data.get(0),2);
+                temp=data.get(0);
                 descr=data.get(5);
                 m2=" interface "+data.get(1);
-              
-             
-             if(data.get(0).substring(0,4).contains("196.")) m1="interface vbui1700" ;            
-//             if(temp>=0&&temp<=63) m1="interface vbui100" ;
-//             if(temp>=96&&temp<=111) m1="interface vbui200" ;
-        if((temp>=0&&temp<=63)&&(temp2!=85)) m1="interface vbui100"; 
-        if((temp>=96&&temp<=111)&&(temp2!=85)&&(temp2!=151))m1="interface vbui200";
-        if((temp>=128&&temp<=254)&&(temp2==85))m1="interface vbui101";
-        if((temp>=96&&temp<=127)&&(temp2==151))m1="interface vbui300";
+                m1="interface "+getVbui(temp);
                 exVlan=data.get(2);
                 cVlan="ip-host description "+descr+" "+wanIp+" "+Interface+" vlan "+data.get(2)+" sec-vlan "+sVlan+
                         " author-temp-name "+data.get(4);
@@ -3779,9 +3550,7 @@ return allData;
             finalVlan.add(m2);
             finalVlan.add("    qinq range internal-vlan-range "+sVlan+" external-vlan-range "+exVlan);
             finalVlan.add("  $");
-            //finalVlan.add("vbui-configuration");
-            //finalVlan.add(m1);
-           // finalVlan.add(cVlan);
+            
          } 
             return finalVlan; 
            }
@@ -3817,16 +3586,8 @@ return allData;
            tok.add(upRateIndex.get(0)+3,SPEED);
            String SpeedC=""; String m1="";
            for(String tokIng:tok) SpeedC= (SpeedC+tokIng+" ");
-           
-        int temp=subIp(tok.get(2),3);          
-        int temp2=subIp(tok.get(2),2);          
-//        if(temp>=0&&temp<=63) m1="interface vbui100";  
-//        if(temp>=96&&temp<=111)m1="interface vbui200";
-        if((temp>=0&&temp<=63)&&(temp2!=85)) m1="interface vbui100"; 
-        if((temp>=96&&temp<=111)&&(temp2!=85)&&(temp2!=151))m1="interface vbui200";
-        if((temp>=128&&temp<=254)&&(temp2==85))m1="interface vbui101";
-        if((temp>=96&&temp<=127)&&(temp2==151))m1="interface vbui300";
-        if(tok.get(2).substring(0,3).equals("196"))  m1="interface vbui1700" ;
+           m1="interface "+getVbui(tok.get(2));         
+     
         
         fs="   \n\n\n "+
          ("   config t\n")+ 
@@ -3848,25 +3609,13 @@ return allData;
             for(String h:tokin)tok.add(h);            
             tok.removeAll(Arrays.asList("", null));
             String SPEED=speedN(speed,tok.get(3));
-           
             ArrayList<Integer> upRateIndex= searchIndex(tok,"author-temp-name");
-            
-           tok.remove(upRateIndex.get(0)+1); 
-          // tok.remove(upRateIndex.get(0)+2); 
-           tok.add(upRateIndex.get(0)+1,SPEED); 
-           //tok.add(upRateIndex.get(0)+3,SPEED);
-           String SpeedC=""; String m1="";
-           for(String tokIng:tok) SpeedC= (SpeedC+tokIng+" ");
-           
-        int temp=subIp(tok.get(3),3);          
-        int temp2=subIp(tok.get(3),2);          
-//        if(temp>=0&&temp<=63) m1="interface vbui100";  
-//        if(temp>=96&&temp<=111)m1="interface vbui200";
-        if((temp>=0&&temp<=63)&&(temp2!=85)) m1="interface vbui100"; 
-        if((temp>=96&&temp<=111)&&(temp2!=85)&&(temp2!=151))m1="interface vbui200";
-        if((temp>=128&&temp<=254)&&(temp2==85))m1="interface vbui101";
-        if((temp>=96&&temp<=127)&&(temp2==151))m1="interface vbui300";
-        if(tok.get(3).substring(0,3).equals("196"))  m1="interface vbui1700" ;
+            tok.remove(upRateIndex.get(0)+1); 
+            tok.add(upRateIndex.get(0)+1,SPEED); 
+            String SpeedC=""; String m1="";
+            for(String tokIng:tok) SpeedC= (SpeedC+tokIng+" ");
+            m1="interface "+getVbui(tok.get(3));        
+
 
 
       fs=("     config t")+ 
@@ -3945,38 +3694,28 @@ String  eIpNum=""+subIp(eIp,1)+subIp(eIp,2)+subIp(eIp,3)+subIp(eIp,4);
  String searchStr="",searchStr1="fbsdhfbsd44t4t4###",strTokIndex="",strTokIndex1="";
  
  ArrayList<String> bData=new ArrayList<>();
-
+// broadband
  
-  if (((    subIp(sIp,3)>=0)&&(subIp(eIp,3)<64)) ||  // vbui100
-        (subIp(sIp,1))==196  ||  //vbui1700
-        ((95<(subIp(sIp,3))) && ((subIp(eIp,3))<=111)) || // vbui200
-        (((128<=(subIp(sIp,3))) && ((subIp(eIp,3))<=255)&&((subIp(sIp,2))==85)))||
-        (((96<=(subIp(sIp,3))) && ((subIp(eIp,3))<=127)&&((subIp(sIp,2))==151)))){
-  //if((((subIp(sIp,3)>=0)&&(subIp(eIp,3)<64)) || (subIp(sIp,1))==196  || ((95<(subIp(sIp,3))) && ((subIp(eIp,3))<=111)))){
-searchStr="ip-host description ";
-searchStr1="ip host "+ subIp(sIp,1)+"."+subIp(sIp,2);
-sub=32;
+if (getVbui(sIp).toLowerCase().contains("vbui")){
+ searchStr="ip-host description ";
+ searchStr1="ip host "+ subIp(sIp,1)+"."+subIp(sIp,2);
+ sub=32;
    
  } 
- 
- 
-
-  if((63<(subIp(sIp,3)))&&((subIp(eIp,3))<96)&&(subIp(sIp,1))==10&&(subIp(eIp,1))==10) {
+// public
+if(getVbui(sIp).toLowerCase().contains("public")) {
 
  searchStr="ip address "+subIp(sIp,1)+"."+subIp(sIp,2);
  strTokIndex1="ip address "; 
- 
  sub=30;
-
-     
+   
  }
  
-//   if((193<(subIp(sIp,3))) && ((subIp(sIp,3))<256)) {
-   if((191<(subIp(sIp,3))) && ((subIp(sIp,3))<256)&&(subIp(sIp,1))==10&&(subIp(eIp,1))==10) {
+// VPN
+if(getVbui(sIp).toLowerCase().contains("vpn")) {
  
  searchStr="ip address "+subIp(sIp,1)+"."+subIp(sIp,2);
  strTokIndex1="ip address "; 
- 
  sub=29;
 
        
@@ -4031,34 +3770,20 @@ public ArrayList<String> allIpFinder(String range){
   
 
  int inc=-1,R1=0;
- 
-if(((    subIp(sIp,3)>=0)&&(subIp(eIp,3)<64)) ||  // vbui100
-        (subIp(sIp,1))==196  ||  //vbui1700
-        ((95<(subIp(sIp,3))) && ((subIp(eIp,3))<=111)) || // vbui200
-        (((128<=(subIp(sIp,3))) && ((subIp(eIp,3))<=255)&&((subIp(sIp,2))==85)))||
-        (((96<=(subIp(sIp,3))) && ((subIp(eIp,3))<=127)&&((subIp(sIp,2))==151)))){ //vbui300) {  //vbui101
-
-
- inc=1;
-
- R1=746;
-     
+ //broadband
+if(getVbui(sIp).toLowerCase().contains("vbui")){ //vbui300) {  //vbui101
+inc=1;
+R1=746;
 }
- 
- 
-  if((63<(subIp(sIp,3)))&&((subIp(eIp,3))<96)&&(subIp(sIp,1))==10&&(subIp(eIp,1))==10) {
-
-
- inc=5;
-
- R1=748;
-     
-  }
-
-  if((191<(subIp(sIp,3))) && ((subIp(sIp,3))<256)&&(subIp(sIp,1))==10&&(subIp(eIp,1))==10) {
+ //public
+if(getVbui(sIp).toLowerCase().contains("public")) {
+inc=5;
+R1=748;
+}
+//vpn
+if(getVbui(sIp).toLowerCase().contains("vpn")) {
 inc=9;
 R1=752;
-
 }
 // 10.130.48.1 - 10.130.63.254  a=2 b=6 c=9   d=2 e =6 f =9
 ArrayList<String> ALLIP= new ArrayList<>();   
@@ -4084,9 +3809,7 @@ ArrayList<String> ALLIP= new ArrayList<>();
        x=((str2num(x1.substring(b-1,x1.length()))+R1)/1000);    //1
 
    }
-     
-  
-    return ALLIP;
+   return ALLIP;
      
   }
  //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -4099,23 +3822,15 @@ public ArrayList freeIpFinder(int row,int col){
 public void dataUpdater(ArrayList<String> updatedData1){
      
       ArrayList<String>[][] temp= new ArrayList[IPrange.length][IPrange[0].length];
-//      ArrayList<String>[] temp2= new ArrayList[dataColls(A,0).length];
-//      ArrayList<String>[] temp3= new ArrayList[dataColls(A,0).length];
+
       
        for (int i = 0; i < IPrange.length; i++) {
          for (int j = 0; j <IPrange[i].length-1 ; j++) {
             temp[i][j]=new ArrayList<>();
-          
-         }
+        }
          
      }
-//       for (int h = 0; h < temp2.length; h++) {
-//           temp2[h]= new ArrayList<>();
-//        
-//    }
-       
- //for(String mike:xmlListRead("updatedTask"))updatedData1.add(mike); 
-  // IP Updater    
+   
      for (int i = 1; i < IPrange.length; i++) {
          for (int j = 1; j <IPrange[i].length-1 ; j++) {
           temp[i][j]=takenIpFinder(updatedData1,IPrange[i][j]);
@@ -4125,9 +3840,7 @@ public void dataUpdater(ArrayList<String> updatedData1){
     
      for (int ii = 1; ii < IPrange.length; ii++) {
          for (int jj = 1; jj <IPrange[ii].length-1 ; jj++) {
-          
-             
-             for (int k = 0; k < temp[ii][jj].size(); k++) {
+           for (int k = 0; k < temp[ii][jj].size(); k++) {
                      takenIpData[ii][jj].add( temp[ii][jj].get(k) );
                  }
              
@@ -4142,24 +3855,7 @@ public void dataUpdater(ArrayList<String> updatedData1){
          
      }
         
-        // VLAN UPDATER
-//        
-//     
-//           temp2= takenVlanFinder(updatedData1,temp2.length);
-//        
-//        
-//      
-//      for (int d = 1; d < temp2.length; d++) {
-//          for (int i = 0; i < temp2[d].size(); i++) {
-//              takenVlanData[i].add(temp2[d].get(i));  
-//          }
-//      }
-//      
-//       for (int w = 1; w < temp2.length; w++) {
-//          freeVlanData[w]=XOR(freeVlanData[w],takenVlanData[w]);
-//        
-//      }  
-//     
+     
  }
 
        
@@ -5872,11 +5568,11 @@ if(sInd.size()==1)count=0;
  msagTag.setText(String.valueOf(A[index][0]));msagTag.setHorizontalAlignment(JLabel.CENTER);
  area.setText(String.valueOf(A[index][3]));area.setHorizontalAlignment(JLabel.CENTER);
  outputtext.setText("");
- outputtext.append("\n\n\n"+"                            Qinq interface for vbui100    :     "+qinqvbui100(index));
- outputtext.append("\n\n"+"                            Qinq interface for vbui101  :     "+qinqvbui101(index));
- outputtext.append("\n\n"+"                            Qinq interface for vbui1700  :     "+qinqvbui1700(index));
- outputtext.append("\n\n"+"                            Qinq interface for vbui200  :     "+qinqvbui200(index));
- outputtext.append("\n\n"+"                            Qinq interface for vbui300  :     "+qinqvbui300(index));
+ outputtext.append("\n\n\n"+"                            Qinq interface for vbui100    :     "+qinq(index,"vbui100"));
+ outputtext.append("\n\n"+"                            Qinq interface for vbui101  :     "+qinq(index,"vbui101"));
+ outputtext.append("\n\n"+"                            Qinq interface for vbui1700  :     "+qinq(index,"vbui1700"));
+ outputtext.append("\n\n"+"                            Qinq interface for vbui200  :     "+qinq(index,"vbui200"));
+ outputtext.append("\n\n"+"                            Qinq interface for vbui300  :     "+qinq(index,"vbui300"));
  outputtext.append("\n\n"+"                            ER-vpn Interface                  :     "+String.valueOf(A[index][6]));
  outputtext.append("\n\n"+"                            ER-A int IP to bras               :     "+String.valueOf(A[index][7]));
  outputtext.append("\n\n"+"                            ER-B int IP to bras               :     "+String.valueOf(A[index][8]));
@@ -6491,8 +6187,8 @@ if (findCount>=findIndex.size())findCount=0;
         ArrayList <String> Data=ppParamFind(outputtext.getText());
          
        if(searchIndex!=-1){
-          SMARTG=smartgroup(searchIndex)+A[searchIndex][2]+changevlan.getText(); 
-          dataPInterface=A[searchIndex][6]+"."+A[searchIndex][2]+changevlan.getText();
+         SMARTG=smartgroup(searchIndex)+A[searchIndex][2]+changevlan.getText(); 
+         dataPInterface=A[searchIndex][6]+"."+A[searchIndex][2]+changevlan.getText();
           exVlan=A[searchIndex][2];
           erAip=A[searchIndex][7];
           erBip=A[searchIndex][8];
@@ -6990,7 +6686,9 @@ ArrayList<ArrayList<String>> backup=xmlArrayRead("BackUp");
                 outputtext.append("  no"+deleteIpHost.get(7)+"\n\n");
             }
           ArrayList<String> pOut=new ArrayList<>();
+          
           SMARTG=smartgroup(searchIndex)+A[searchIndex][2]+pVlan.getText(); 
+         
           dataInterface=A[searchIndex][6]+"."+A[searchIndex][2]+pVlan.getText();
           exVlan=A[searchIndex][2];
           erAip=A[searchIndex][7];
